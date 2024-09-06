@@ -53,15 +53,15 @@ module.exports = {
       en: 'This is a large Ai language model trained by OpenAi, it is designed to assist with a wide range of tasks.',
     },
     guide: {
-      en: '\nAi < questions >\n\n🔎 𝗚𝘂𝗶𝗱𝗲\nAi what is capital of France?',
+      en: '\n𝙷𝙾𝙼𝙴𝚁 𝙰𝙸 𝙱𝙾𝚃 < questions >\n\n🔎 𝗚𝘂𝗶𝗱𝗲\nAi what is capital of France?',
     },
   },
 
   langs: {
     en: {
       final: "",
-      header: "🧋✨ | 𝙼𝚘𝚌𝚑𝚊 𝙰𝚒\n━━━━━━━━━━━━━━━━",
-      footer: "━━━━━━━━━━━━━━━━",
+      header: "•| 𝙷𝙾𝙼𝙴𝚁 𝙰𝙸 𝙱𝙾𝚃 |•\n\n",
+      footer: "\n\n•| 𝙾𝚆𝙽𝙴𝚁 : 𝙷𝙾𝙼𝙴𝚁 𝚁𝙴𝙱𝙰𝚃𝙸𝚂 |•",
     }
   },
 
