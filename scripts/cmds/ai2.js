@@ -1,130 +1,71 @@
 const axios = require('axios');
 
-const services = [
-  { url: 'https://gpt-four.vercel.app/gpt', param: { prompt: 'prompt' }, isCustom: true }
-];
-
-async function callService(service, prompt, senderID) {
-  if (service.isCustom) {
+async function gptConvoAPI(ask, id) {
     try {
-      const response = await axios.get(`${service.url}?${service.param.prompt}=${encodeURIComponent(prompt)}`);
-      return response.data.answer || response.data;
+        const response = await axios.get(`https://jonellccprojectapis10.adaptable.app/api/gptconvo?ask=${encodeURIComponent(ask)}&id=${id}`);
+        
+        if (response.data && response.data.response) {
+            return response.data.response;
+        } else {
+            return "Unexpected API response format. Please check the API or contact support.";
+        }
     } catch (error) {
-      console.error(`Custom service error from ${service.url}: ${error.message}`);
-      throw new Error(`Error from ${service.url}: ${error.message}`);
+        console.error("Error fetching data:", error.message);
+        return "Failed to fetch data. Please try again later.";
     }
-  } else {
-    const params = {};
-    for (const [key, value] of Object.entries(service.param)) {
-      params[key] = key === 'uid' ? senderID : encodeURIComponent(prompt);
-    }
-    const queryString = new URLSearchParams(params).toString();
-    try {
-      const response = await axios.get(`${service.url}?${queryString}`);
-      return response.data.answer || response.data;
-    } catch (error) {
-      console.error(`Service error from ${service.url}: ${error.message}`);
-      throw new Error(`Error from ${service.url}: ${error.message}`);
-    }
-  }
 }
-
-async function getFastestValidAnswer(prompt, senderID) {
-  const promises = services.map(service => callService(service, prompt, senderID));
-  const results = await Promise.allSettled(promises);
-  for (const result of results) {
-    if (result.status === 'fulfilled' && result.value) {
-      return result.value;
-    }
-  }
-  throw new Error('All services failed to provide a valid answer');
-}
-
-const ArYAN = ['ai', '-ai'];
 
 module.exports = {
-  config: {
-    name: 'ai',
-    version: '1.0.1',
-    author: 'ArYAN',
+    name: "ai2",
+    description: "Interact with GPT-3 conversational AI",
+    nashPrefix: false,
+    version: "1.0.0",
     role: 0,
-    category: 'ai',
-    longDescription: {
-      en: 'This is a large Ai language model trained by OpenAi, it is designed to assist with a wide range of tasks.',
-    },
-    guide: {
-      en: '\n𝙷𝙾𝙼𝙴𝚁 𝙰𝙸 𝙱𝙾𝚃 < questions >\n\n🔎 𝗚𝘂𝗶𝗱𝗲\nAi what is capital of France?',
-    },
-  },
+    cooldowns: 5,
+    async execute(api, event, args) {
+        const { threadID, messageID, senderID } = event;
+        const message = args.join(" ");
 
-  langs: {
-    en: {
-      final: "",
-      header: "•| 𝙷𝙾𝙼𝙴𝚁 𝙰𝙸 𝙱𝙾𝚃 |•\n",
-      footer: "\n•| 𝙾𝚆𝙽𝙴𝚁 : 𝙷𝙾𝙼𝙴𝚁 𝚁𝙴𝙱𝙰𝚃𝙸𝚂 |•",
-    }
-  },
+        if (!message) return api.sendMessage("Please provide your question.\n\nExample: G4 What is the solar system?", threadID, messageID);
 
-  onStart: async function () {
-    // Empty onStart function
-  },
-
-  onChat: async function ({ api, event, args, getLang, message }) {
-    try {
-      const prefix = ArYAN.find(p => event.body && event.body.toLowerCase().startsWith(p));
-      let prompt;
-
-      // Check if the user is replying to a bot message
-      if (event.type === 'message_reply') {
-        const replyMessage = event.messageReply; // Adjusted to use the replyMessage directly
-
-        // Check if the bot's original message starts with the header
-        if (replyMessage.body && replyMessage.body.startsWith(getLang("header"))) {
-          // Extract the user's reply from the event
-          prompt = event.body.trim();
-
-          // Combine the user's reply with the bot's original message
-          prompt = `${replyMessage.body}\n\nUser reply: ${prompt}`;
-        } else {
-          // If the bot's original message doesn't start with the header, return
-          return;
-        }
-      } else if (prefix) {
-        prompt = event.body.substring(prefix.length).trim() || 'hello';
-      } else {
-        return;
-      }
-
-      if (prompt === 'hello') {
-        const greetingMessage = `${getLang("header")}\nHello! How can I assist you today?\n${getLang("footer")}`;
-        api.sendMessage(greetingMessage, event.threadID, event.messageID);
-        console.log('Sent greeting message as a reply to user');
-        return;
-      }
-
-      try {
-        const fastestAnswer = await getFastestValidAnswer(prompt, event.senderID);
-
-        const finalMsg = `${getLang("header")}\n${fastestAnswer}\n${getLang("footer")}`;
-        api.sendMessage(finalMsg, event.threadID, event.messageID);
-
-        console.log('Sent answer as a reply to user');
-      } catch (error) {
-        console.error(`Failed to get answer: ${error.message}`);
         api.sendMessage(
-          `${error.message}.`,
-          event.threadID,
-          event.messageID
-        );
-      }
-    } catch (error) {
-      console.error(`Failed to process chat: ${error.message}`);
-      api.sendMessage(
-        `${error.message}.`,
-        event.threadID,
-        event.messageID
-      );
+            "💬 Homer AI Bot Responding...",
+            threadID,
+            async (err, info) => {
+                if (err) return;
+                try {
+                    if (event.type === "message_reply" && event.messageReply.attachments && event.messageReply.attachments[0]) {
+                        const attachment = event.messageReply.attachments[0];
 
-    }
-  }
+                        if (attachment.type === "photo") {
+                            const imageURL = attachment.url;
+                            const geminiUrl = `https://joncll.serv00.net/chat.php?ask=${encodeURIComponent(message)}&imgurl=${encodeURIComponent(imageURL)}`;
+                            const geminiResponse = await axios.get(geminiUrl);
+                            const { vision } = geminiResponse.data;
+
+                            if (vision) {
+                                return api.editMessage(
+                                    `•| 𝙷𝙾𝙼𝙴𝚁 𝙰𝙸 𝙱𝙾𝚃  |•\n\n${vision}\n\n•| 𝙾𝚆𝙽𝙴𝚁 : 𝙷𝙾𝙼𝙴𝚁 𝚁𝙴𝙱𝙰𝚃𝙸𝚂 |•`,
+                                    info.messageID
+                                );
+                            } else {
+                                return api.sendMessage("🤖 Failed to recognize the image.", threadID, messageID);
+                            }
+                        }
+                    }
+
+                    const response = await gptConvoAPI(message, senderID);
+                    api.editMessage(
+                        `•| 𝙷𝙾𝙼𝙴𝚁 𝙰𝙸 𝙱𝙾𝚃 |•\n\n${response}\n\n•| 𝙾𝚆𝙽𝙴𝚁 : 𝙷𝙾𝙼𝙴𝚁 𝚁𝙴𝙱𝙰𝚃𝙸𝚂 |•`,
+                        info.messageID,
+                        threadID,
+                        messageID
+                    );
+                } catch (error) {
+                    api.sendMessage("An error occurred while processing your request.", threadID, messageID);
+                }
+            },
+            messageID
+        );
+    },
 };
